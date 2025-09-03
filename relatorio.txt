@@ -1,0 +1,23 @@
+Tempo de execução do scalar_matrix_mult: 3.197000027ms
+Tempo de execução do matrix_matrix_mult: 4913.246094ms
+Tempo de execução total: 4972.680176ms
+Dados da CPU:
+ per núcleo  1
+Núcleo(s) por soquete:1
+Soquete(s):            1
+Nó(s) de NUMA:        1
+ID de fornecedor:      AuthenticAMD
+Família da CPU:       23
+Modelo:                104
+Nome do modelo:        AMD Ryzen 7 5700U with Radeon Graphics
+Step:                  1
+CPU MHz:               1796.567
+BogoMIPS:              3593.13
+Fabricante do hypervisor:VMware
+Tipo de virtualização:completo
+cache de L1d:          32K
+cache de L1i:          32K
+cache de L2:           512K
+cache de L3:           8192K
+CPU(s) de nó0 NUMA:   0
+Flags:                 fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext pdpe1gb rdtscp lm constant_tsc rep_good nopl tsc_reliable nonstop_tsc extd_apicid eagerfpu pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw arat vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx smap xsaveopt
