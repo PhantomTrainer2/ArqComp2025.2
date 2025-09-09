@@ -6,28 +6,24 @@
 #include "timer.h"
 
 
-void print_matrix_preview(struct matrix *m, const char *title, FILE *output_file) {
+void print_matrix(struct matrix *m, const char *title) {
 
     char texto[256];
     snprintf(texto, sizeof(texto), "\n--- Exibindo os primeiros 256 elementos de: %s ---\n", title);
     
     printf("%s", texto);
-    fwrite(texto, sizeof(char), strlen(texto), output_file);
 
     for (unsigned long i = 0; i < 256; i++) {
         char element_str[32];
         snprintf(element_str, sizeof(element_str), "%10.2f ", m->rows[i]);
         
         printf("%s", element_str);
-        fwrite(element_str, sizeof(char), strlen(element_str), output_file);
 
         if ((i + 1) % 8 == 0 || i == 256 - 1) {
             printf("\n");
-            fwrite("\n", sizeof(char), 1, output_file);
         }
     }
     printf("\n");
-    fwrite("\n", sizeof(char), 1, output_file);
 }
 
 
@@ -67,19 +63,15 @@ int save_matrix_to_file(struct matrix *m, const char *filename) {
 }
 
 int main(int argc, char *argv[]) {
-    FILE *relatorio = fopen("relatorio.txt", "w");
-    if (relatorio == NULL) {
-        perror("Não foi possível criar o arquivo de relatório");
-        return 1;
-    }
 
+    printf("\nDados do CPU:\n\n");
+    system("lscpu");
     struct timeval overall_t1, overall_t2, op_start, op_stop;
     
     gettimeofday(&overall_t1, NULL);
 
     if (argc != 10) {
         fprintf(stderr, "Uso: %s Valor HMat1 WMat1 HMat2 WMat2 ArqMat1 ArqMat2 ArqRes1 ArqRes2\n", argv[0]);
-        fclose(relatorio);
         return 1;
     }
 
@@ -98,7 +90,6 @@ int main(int argc, char *argv[]) {
     
     if (A.width != B.height) {
         fprintf(stderr, "Erro: Dimensões incompatíveis para multiplicação. A.width (%lu) != B.height (%lu).\n", A.width, B.height);
-        fclose(relatorio);
         return 1;
     }
 
@@ -111,34 +102,29 @@ int main(int argc, char *argv[]) {
     if (A.rows == NULL || B.rows == NULL || C.rows == NULL) {
         fprintf(stderr, "Erro: Falha na alocação de memória para as matrizes.\n");
         free(A.rows); free(B.rows); free(C.rows);
-        fclose(relatorio);
         return 1;
     }
 
     printf("\nCarregando matrizes dos arquivos...\n");
     if (!load_matrix_from_file(&A, file_A_in) || !load_matrix_from_file(&B, file_B_in)) {
         free(A.rows); free(B.rows); free(C.rows);
-        fclose(relatorio);
         return 1;
     }
     printf("Matrizes carregadas com sucesso.\n\n");
 
-    // <<< IMPRIME AS MATRIZES ORIGINAIS >>>
-    print_matrix_preview(&A, "Matriz A (Original)", relatorio);
-    print_matrix_preview(&B, "Matriz B (Original)", relatorio);
+    print_matrix(&A, "Matriz A (Original)");
+    print_matrix(&B, "Matriz B (Original)");
 
     printf("Executando scalar_matrix_mult...\n");
     gettimeofday(&op_start, NULL);
     if (scalar_matrix_mult(scalar_value, &A)) {
         gettimeofday(&op_stop, NULL);
         
-        // <<< IMPRIME A MATRIZ A APÓS A MULTIPLICAÇÃO POR ESCALAR >>>
-        print_matrix_preview(&A, "Matriz A (Apos Multiplicacao por Escalar)", relatorio);
+        print_matrix(&A, "Matriz A (Apos Multiplicacao por Escalar)");
         
         char tempo1[128];
         snprintf(tempo1, sizeof(tempo1), "Tempo de execucao do scalar_matrix_mult: %f ms\n", timedifference_msec(op_start, op_stop));
         printf("%s", tempo1);
-        fwrite(tempo1, sizeof(char), strlen(tempo1), relatorio);
         
         if (save_matrix_to_file(&A, file_res1_out)) {
              printf("Resultado 1 salvo em %s\n", file_res1_out);
@@ -153,13 +139,12 @@ int main(int argc, char *argv[]) {
         gettimeofday(&op_stop, NULL);
         
         // <<< IMPRIME A MATRIZ C (RESULTADO FINAL) >>>
-        print_matrix_preview(&C, "Matriz C (Resultado Final)", relatorio);
+        print_matrix(&C, "Matriz C (Resultado Final)");
 
         char tempo2[128];
         snprintf(tempo2, sizeof(tempo2), "Tempo de execucao do matrix_matrix_mult: %f ms\n", timedifference_msec(op_start, op_stop));
         printf("%s", tempo2);
-        fwrite(tempo2, sizeof(char), strlen(tempo2), relatorio);
-        
+
         if (save_matrix_to_file(&C, file_res2_out)) {
              printf("Resultado 2 salvo em %s\n", file_res2_out);
         }
@@ -175,14 +160,6 @@ int main(int argc, char *argv[]) {
     char tempo3[128];
     snprintf(tempo3, sizeof(tempo3), "\nTempo de execucao total: %f ms\n", timedifference_msec(overall_t1, overall_t2));
     printf("%s", tempo3);
-    fwrite(tempo3, sizeof(char), strlen(tempo3), relatorio);
-
-    const char* titulo = "\n--- Dados da CPU ---\n";
-    fwrite(titulo, sizeof(char), strlen(titulo), relatorio);
-    fclose(relatorio);
-    system("lscpu >> relatorio.txt");
-    
-    printf("\nRelatorio salvo em relatorio.txt\n");
 
     return 0;
 }
