@@ -1,3 +1,35 @@
+[aluno@localhost trab2]$ ./matrix_lib_test 5 1024 1024 1024 1024 matriz1.dat matriz2.dat res1.dat res2.dat
+
+Dados do CPU:
+
+Arquitetura:           x86_64
+Modo(s) operacional da CPU:32-bit, 64-bit
+Ordem dos bytes:       Little Endian
+CPU(s):                1
+Lista de CPU(s) on-line:0
+Thread(s) per núcleo  1
+Núcleo(s) por soquete:1
+Soquete(s):            1
+Nó(s) de NUMA:        1
+ID de fornecedor:      AuthenticAMD
+Família da CPU:       23
+Modelo:                104
+Nome do modelo:        AMD Ryzen 7 5700U with Radeon Graphics
+Step:                  1
+CPU MHz:               1796.563
+BogoMIPS:              3593.12
+Fabricante do hypervisor:VMware
+Tipo de virtualização:completo
+cache de L1d:          32K
+cache de L1i:          32K
+cache de L2:           512K
+cache de L3:           8192K
+CPU(s) de nó0 NUMA:   0
+Flags:                 fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext pdpe1gb rdtscp lm constant_tsc rep_good nopl tsc_reliable nonstop_tsc extd_apicid eagerfpu pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw arat vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx smap xsaveopt
+
+Carregando matrizes dos arquivos...
+Matrizes carregadas com sucesso.
+
 
 --- Exibindo os primeiros 256 elementos de: Matriz A (Original) ---
       2.00       2.00       2.00       2.00       2.00       2.00       2.00       2.00 
@@ -68,6 +100,7 @@
       5.00       5.00       5.00       5.00       5.00       5.00       5.00       5.00 
       5.00       5.00       5.00       5.00       5.00       5.00       5.00       5.00 
 
+Executando scalar_matrix_mult...
 
 --- Exibindo os primeiros 256 elementos de: Matriz A (Apos Multiplicacao por Escalar) ---
      10.00      10.00      10.00      10.00      10.00      10.00      10.00      10.00 
@@ -103,7 +136,10 @@
      10.00      10.00      10.00      10.00      10.00      10.00      10.00      10.00 
      10.00      10.00      10.00      10.00      10.00      10.00      10.00      10.00 
 
-Tempo de execucao do scalar_matrix_mult: 4.358000 ms
+Tempo de execucao do scalar_matrix_mult: 0.536000 ms
+Resultado 1 salvo em res1.dat
+
+Executando matrix_matrix_mult...
 
 --- Exibindo os primeiros 256 elementos de: Matriz C (Resultado Final) ---
   51200.00   51200.00   51200.00   51200.00   51200.00   51200.00   51200.00   51200.00 
@@ -139,128 +175,8 @@ Tempo de execucao do scalar_matrix_mult: 4.358000 ms
   51200.00   51200.00   51200.00   51200.00   51200.00   51200.00   51200.00   51200.00 
   51200.00   51200.00   51200.00   51200.00   51200.00   51200.00   51200.00   51200.00 
 
-Tempo de execucao do matrix_matrix_mult: 3792.509033 ms
+Tempo de execucao do matrix_matrix_mult: 1046.452026 ms
+Resultado 2 salvo em res2.dat
 
-Tempo de execucao total: 3839.591064 ms
+Tempo de execucao total: 1187.489990 ms
 
---- Dados da CPU ---
-Arquitetura:           x86_64
-Modo(s) operacional da CPU:32-bit, 64-bit
-Ordem dos bytes:       Little Endian
-CPU(s):                1
-Lista de CPU(s) on-line:0
-Thread(s) per núcleo  1
-Núcleo(s) por soquete:1
-Soquete(s):            1
-Nó(s) de NUMA:        1
-ID de fornecedor:      AuthenticAMD
-Família da CPU:       23
-Modelo:                104
-Nome do modelo:        AMD Ryzen 7 5700U with Radeon Graphics
-Step:                  1
-CPU MHz:               1796.566
-BogoMIPS:              3593.13
-Fabricante do hypervisor:VMware
-Tipo de virtualização:completo
-cache de L1d:          32K
-cache de L1i:          32K
-cache de L2:           512K
-cache de L3:           8192K
-CPU(s) de nó0 NUMA:   0
-Flags:                 fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext pdpe1gb rdtscp lm constant_tsc rep_good nopl tsc_reliable nonstop_tsc extd_apicid eagerfpu pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw arat vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx smap xsaveopt
-Arquitetura:           x86_64
-Modo(s) operacional da CPU:32-bit, 64-bit
-Ordem dos bytes:       Little Endian
-CPU(s):                1
-Lista de CPU(s) on-line:0
-Thread(s) per núcleo  1
-Núcleo(s) por soquete:1
-Soquete(s):            1
-Nó(s) de NUMA:        1
-ID de fornecedor:      AuthenticAMD
-Família da CPU:       23
-Modelo:                104
-Nome do modelo:        AMD Ryzen 7 5700U with Radeon Graphics
-Step:                  1
-CPU MHz:               1796.566
-BogoMIPS:              3593.13
-Fabricante do hypervisor:VMware
-Tipo de virtualização:completo
-cache de L1d:          32K
-cache de L1i:          32K
-cache de L2:           512K
-cache de L3:           8192K
-CPU(s) de nó0 NUMA:   0
-Flags:                 fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext pdpe1gb rdtscp lm constant_tsc rep_good nopl tsc_reliable nonstop_tsc extd_apicid eagerfpu pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw arat vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx smap xsaveopt
-Arquitetura:           x86_64
-Modo(s) operacional da CPU:32-bit, 64-bit
-Ordem dos bytes:       Little Endian
-CPU(s):                1
-Lista de CPU(s) on-line:0
-Thread(s) per núcleo  1
-Núcleo(s) por soquete:1
-Soquete(s):            1
-Nó(s) de NUMA:        1
-ID de fornecedor:      AuthenticAMD
-Família da CPU:       23
-Modelo:                104
-Nome do modelo:        AMD Ryzen 7 5700U with Radeon Graphics
-Step:                  1
-CPU MHz:               1796.566
-BogoMIPS:              3593.13
-Fabricante do hypervisor:VMware
-Tipo de virtualização:completo
-cache de L1d:          32K
-cache de L1i:          32K
-cache de L2:           512K
-cache de L3:           8192K
-CPU(s) de nó0 NUMA:   0
-Flags:                 fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext pdpe1gb rdtscp lm constant_tsc rep_good nopl tsc_reliable nonstop_tsc extd_apicid eagerfpu pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw arat vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx smap xsaveopt
-Arquitetura:           x86_64
-Modo(s) operacional da CPU:32-bit, 64-bit
-Ordem dos bytes:       Little Endian
-CPU(s):                1
-Lista de CPU(s) on-line:0
-Thread(s) per núcleo  1
-Núcleo(s) por soquete:1
-Soquete(s):            1
-Nó(s) de NUMA:        1
-ID de fornecedor:      AuthenticAMD
-Família da CPU:       23
-Modelo:                104
-Nome do modelo:        AMD Ryzen 7 5700U with Radeon Graphics
-Step:                  1
-CPU MHz:               1796.566
-BogoMIPS:              3593.13
-Fabricante do hypervisor:VMware
-Tipo de virtualização:completo
-cache de L1d:          32K
-cache de L1i:          32K
-cache de L2:           512K
-cache de L3:           8192K
-CPU(s) de nó0 NUMA:   0
-Flags:                 fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext pdpe1gb rdtscp lm constant_tsc rep_good nopl tsc_reliable nonstop_tsc extd_apicid eagerfpu pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw arat vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx smap xsaveopt
-Arquitetura:           x86_64
-Modo(s) operacional da CPU:32-bit, 64-bit
-Ordem dos bytes:       Little Endian
-CPU(s):                1
-Lista de CPU(s) on-line:0
-Thread(s) per núcleo  1
-Núcleo(s) por soquete:1
-Soquete(s):            1
-Nó(s) de NUMA:        1
-ID de fornecedor:      AuthenticAMD
-Família da CPU:       23
-Modelo:                104
-Nome do modelo:        AMD Ryzen 7 5700U with Radeon Graphics
-Step:                  1
-CPU MHz:               1796.566
-BogoMIPS:              3593.13
-Fabricante do hypervisor:VMware
-Tipo de virtualização:completo
-cache de L1d:          32K
-cache de L1i:          32K
-cache de L2:           512K
-cache de L3:           8192K
-CPU(s) de nó0 NUMA:   0
-Flags:                 fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext pdpe1gb rdtscp lm constant_tsc rep_good nopl tsc_reliable nonstop_tsc extd_apicid eagerfpu pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw arat vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx smap xsaveopt
