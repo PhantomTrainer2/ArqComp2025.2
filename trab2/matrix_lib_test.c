@@ -4,20 +4,15 @@
 #include <sys/time.h>
 #include "matrix_lib.h"
 #include "timer.h"
-#include <immintrin.h>
-
 
 void print_matrix(struct matrix *m, const char *title) {
-
     char texto[256];
     snprintf(texto, sizeof(texto), "\n--- Exibindo os primeiros 256 elementos de: %s ---\n", title);
-    
     printf("%s", texto);
 
     for (unsigned long i = 0; i < 256; i++) {
         char element_str[32];
         snprintf(element_str, sizeof(element_str), "%10.2f ", m->rows[i]);
-        
         printf("%s", element_str);
 
         if ((i + 1) % 8 == 0 || i == 256 - 1) {
@@ -26,7 +21,6 @@ void print_matrix(struct matrix *m, const char *title) {
     }
     printf("\n");
 }
-
 
 int load_matrix_from_file(struct matrix *m, const char *filename) {
     FILE *file = fopen(filename, "rb");
@@ -44,7 +38,6 @@ int load_matrix_from_file(struct matrix *m, const char *filename) {
     }
     return 1;
 }
-
 
 int save_matrix_to_file(struct matrix *m, const char *filename) {
     FILE *file = fopen(filename, "wb");
@@ -64,7 +57,6 @@ int save_matrix_to_file(struct matrix *m, const char *filename) {
 }
 
 int main(int argc, char *argv[]) {
-
     printf("\nDados do CPU:\n\n");
     system("lscpu");
     struct timeval overall_t1, overall_t2, op_start, op_stop;
@@ -94,11 +86,15 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    A.rows = (float*) malloc(A.height * A.width * sizeof(float));
-    B.rows = (float*) malloc(B.height * B.width * sizeof(float));
+    size_t size_A = A.height * A.width * sizeof(float);
+    size_t size_B = B.height * B.width * sizeof(float);
     C.height = A.height;
     C.width = B.width;
-    C.rows = (float*) malloc(C.height * C.width * sizeof(float));
+    size_t size_C = C.height * C.width * sizeof(float);
+
+    A.rows = (float*) aligned_alloc(32, size_A);
+    B.rows = (float*) aligned_alloc(32, size_B);
+    C.rows = (float*) aligned_alloc(32, size_C);
 
     if (A.rows == NULL || B.rows == NULL || C.rows == NULL) {
         fprintf(stderr, "Erro: Falha na alocação de memória para as matrizes.\n");
@@ -139,7 +135,6 @@ int main(int argc, char *argv[]) {
     if (matrix_matrix_mult(&A, &B, &C)) {
         gettimeofday(&op_stop, NULL);
         
-        // <<< IMPRIME A MATRIZ C (RESULTADO FINAL) >>>
         print_matrix(&C, "Matriz C (Resultado Final)");
 
         char tempo2[128];
