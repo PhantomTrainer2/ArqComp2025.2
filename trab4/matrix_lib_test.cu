@@ -1,4 +1,3 @@
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -7,25 +6,45 @@
 #include "matrix_lib.h"
 #include "timer.h"
 
+
+//Compilar: nvcc -std=c++11 -o matrix_lib_test matrix_lib_test.cu matrix_lib.cu timer.c
+//Rodar: ./matrix_lib_test 5 2048 2048 2048 2048 256 4096 1024 matA.dat matB.dat res1.dat res2.dat
+
 static void print_first256(const Matrix *m, const char *title) {
-    printf("\n--- Exibindo os primeiros 256 elementos de: %s ---\n", title);
+    char header[256];
+    snprintf(header, sizeof(header),
+             "\n--- Exibindo os primeiros 256 elementos de: %s ---\n",
+             title);
+    printf("%s", header);
+
     unsigned long total = m->height * m->width;
-    unsigned long limit = total < 256 ? total : 256;
+    unsigned long limit = (total < 256UL) ? total : 256UL;
+
     for (unsigned long i = 0; i < limit; ++i) {
-        printf("%10.2f ", m->h_rows[i]);
-        if ((i + 1) % 8 == 0) printf("\n");
+        char element_str[32];
+        snprintf(element_str, sizeof(element_str), "%10.2f ", m->h_rows[i]);
+        printf("%s", element_str);
+
+        if ((i + 1) % 8 == 0 || i == limit - 1) {
+            printf("\n");
+        }
     }
-    if (limit % 8 != 0) printf("\n");
+    printf("\n");
 }
 
 static int load_matrix(Matrix *m, const char *filename) {
     FILE *f = fopen(filename, "rb");
-    if (!f) { perror("Erro ao abrir arquivo de entrada"); return 0; }
+    if (!f) {
+        perror("Erro ao abrir arquivo de entrada");
+        return 0;
+    }
     size_t need = (size_t)m->height * (size_t)m->width;
     size_t got = fread(m->h_rows, sizeof(float), need, f);
     fclose(f);
     if (got != need) {
-        fprintf(stderr, "Erro de leitura em %s: esperado %zu, lido %zu\n", filename, need, got);
+        fprintf(stderr,
+                "Erro de leitura em %s: esperado %zu, lido %zu\n",
+                filename, need, got);
         return 0;
     }
     return 1;
@@ -33,11 +52,17 @@ static int load_matrix(Matrix *m, const char *filename) {
 
 static int save_matrix(const Matrix *m, const char *filename) {
     FILE *f = fopen(filename, "wb");
-    if (!f) { perror("Erro ao abrir arquivo de saída"); return 0; }
+    if (!f) {
+        perror("Erro ao abrir arquivo de saída");
+        return 0;
+    }
     size_t cnt = (size_t)m->height * (size_t)m->width;
     size_t wrote = fwrite(m->h_rows, sizeof(float), cnt, f);
     fclose(f);
-    if (wrote != cnt) { fprintf(stderr, "Erro de escrita em %s\n", filename); return 0; }
+    if (wrote != cnt) {
+        fprintf(stderr, "Erro de escrita em %s\n", filename);
+        return 0;
+    }
     return 1;
 }
 
@@ -45,22 +70,20 @@ int main(int argc, char **argv) {
     printf("\nDados do CPU:\n\n");
     system("lscpu");
 
-    struct timeval overall_t0, overall_t1, t0, t1;
-    gettimeofday(&overall_t0, NULL);
+    struct timeval overall_t1, overall_t2, op_start, op_stop;
+    gettimeofday(&overall_t1, NULL);
 
-    // Expected:
-    // 1: scalar
-    // 2: Ah, 3: Aw, 4: Bh, 5: Bw
-    // 6: threads_per_block
-    // 7: max_blocks_per_grid
-    // 8: max_mem_mib
-    // 9: fileA, 10: fileB, 11: out1, 12: out2
+    // Agora seguimos o estilo da versão anterior:
+    // Uso: Valor HMat1 WMat1 HMat2 WMat2 ThreadsPorBloco MaxBlocosPorGrid MaxMemMiB ArqMat1 ArqMat2 ArqRes1 ArqRes2
     if (argc != 13) {
-        fprintf(stderr, "Uso: %s <scalar> <Ah> <Aw> <Bh> <Bw> <threads_per_block> <max_blocks_per_grid> <max_mem_mib> <fileA> <fileB> <out1> <out2>\n", argv[0]);
+        fprintf(stderr,
+                "Uso: %s Valor HMat1 WMat1 HMat2 WMat2 ThreadsPorBloco "
+                "MaxBlocosPorGrid MaxMemMiB ArqMat1 ArqMat2 ArqRes1 ArqRes2\n",
+                argv[0]);
         return 1;
     }
 
-    float scalar_value       = static_cast<float>(atof(argv[1]));
+    float scalar_value       = (float)atof(argv[1]);
     unsigned long Ah         = strtoul(argv[2],  NULL, 10);
     unsigned long Aw         = strtoul(argv[3],  NULL, 10);
     unsigned long Bh         = strtoul(argv[4],  NULL, 10);
@@ -74,17 +97,21 @@ int main(int argc, char **argv) {
     const char *file_out2    = argv[12];
 
     if (Aw != Bh) {
-        fprintf(stderr, "Erro: Dimensões incompatíveis: Aw (%lu) != Bh (%lu)\n", Aw, Bh);
+        fprintf(stderr,
+                "Erro: Dimensões incompatíveis para multiplicação. "
+                "A.width (%lu) != B.height (%lu).\n", Aw, Bh);
         return 1;
     }
 
-    // Configure launch params (falls back to defaults if invalid)
+    // Configuração de grid (mantendo a lógica do trab4)
     int ok_grid = set_grid_size(threads_per_block, max_blocks_per_grid);
     if (!ok_grid) {
-        fprintf(stderr, "Aviso: valores de grid inválidos; usando defaults (256 threads/block, 4096 blocks/grid)\n");
+        fprintf(stderr,
+                "Aviso: valores de grid inválidos; "
+                "usando defaults (256 threads/block, 4096 blocks/grid)\n");
     }
 
-    // Host allocations
+    // Host allocations (mantendo C++11 init se você já compila com -std=c++11)
     Matrix A{Ah, Aw, nullptr, nullptr, FULL_ALLOC};
     Matrix B{Bh, Bw, nullptr, nullptr, FULL_ALLOC};
     Matrix C{Ah, Bw, nullptr, nullptr, FULL_ALLOC};
@@ -96,28 +123,33 @@ int main(int argc, char **argv) {
     A.h_rows = (float*)aligned_alloc(32, bytesA);
     B.h_rows = (float*)aligned_alloc(32, bytesB);
     C.h_rows = (float*)aligned_alloc(32, bytesC);
+
     if (!A.h_rows || !B.h_rows || !C.h_rows) {
-        fprintf(stderr, "Falha ao alocar memória na CPU.\n");
+        fprintf(stderr,
+                "Erro: Falha na alocação de memória para as matrizes.\n");
+        free(A.h_rows); free(B.h_rows); free(C.h_rows);
         return 1;
     }
     memset(C.h_rows, 0, bytesC);
 
-    // Load input files
+    printf("\nCarregando matrizes dos arquivos...\n");
     if (!load_matrix(&A, fileA) || !load_matrix(&B, fileB)) {
         free(A.h_rows); free(B.h_rows); free(C.h_rows);
         return 1;
     }
+    printf("Matrizes carregadas com sucesso.\n\n");
 
-    // Decide device allocation strategy (Observation 2)
-    // Try FULL for all matrices
-    int strategy = 0; // 0 = FULL, 1 = partial A/C
+    print_first256(&A, "Matriz A (Original)");
+    print_first256(&B, "Matriz B (Original)");
+
+    // --- Escolha da estratégia de alocação na GPGPU (trab4) ---
+    int strategy = 0; // 0 = FULL, 1 = parcial A/C
     if (bytesA + bytesB + bytesC <= max_mem_bytes) {
         strategy = 0;
         A.alloc_mode = FULL_ALLOC;
         B.alloc_mode = FULL_ALLOC;
         C.alloc_mode = FULL_ALLOC;
     } else {
-        // Try B full + 1 row(A) + 1 row(C)
         size_t bytesArow = (size_t)Aw * sizeof(float);
         size_t bytesCrow = (size_t)Bw * sizeof(float);
         if (bytesB + bytesArow + bytesCrow <= max_mem_bytes) {
@@ -126,13 +158,15 @@ int main(int argc, char **argv) {
             B.alloc_mode = FULL_ALLOC;
             C.alloc_mode = PARTIAL_ALLOC;
         } else {
-            fprintf(stderr, "Erro: Memória de GPGPU insuficiente para alocação (nem FULL, nem parcial B+linhas de A/C).\n");
+            fprintf(stderr,
+                    "Erro: Memória de GPGPU insuficiente para alocação "
+                    "(nem FULL, nem parcial B+linhas de A/C).\n");
             free(A.h_rows); free(B.h_rows); free(C.h_rows);
             return 1;
         }
     }
 
-    // Allocate device memory according to strategy
+    // Alocação no device seguindo a estratégia
     if (strategy == 0) {
         cudaMalloc((void**)&A.d_rows, bytesA);
         cudaMalloc((void**)&B.d_rows, bytesB);
@@ -155,38 +189,52 @@ int main(int argc, char **argv) {
     }
 
     // ---- scalar_matrix_mult ----
-    printf("\nExecutando scalar_matrix_mult...\n");
-    gettimeofday(&t0, NULL);
+    printf("Executando scalar_matrix_mult...\n");
+    gettimeofday(&op_start, NULL);
     int ok1 = scalar_matrix_mult(scalar_value, &A);
-    gettimeofday(&t1, NULL);
+    gettimeofday(&op_stop, NULL);
+
     if (!ok1) {
-        fprintf(stderr, "Erro em scalar_matrix_mult.\n");
+        fprintf(stderr, "Erro na execucao de scalar_matrix_mult.\n");
     } else {
-        print_first256(&A, "Matriz A (após multiplicação por escalar)");
-        printf("Tempo scalar_matrix_mult: %f ms\n", timedifference_msec(t0, t1));
-        if (!save_matrix(&A, file_out1)) {
-            fprintf(stderr, "Falha ao salvar %s\n", file_out1);
-        } else {
+        print_first256(&A, "Matriz A (Apos Multiplicacao por Escalar)");
+
+        char tempo1[128];
+        snprintf(tempo1, sizeof(tempo1),
+                 "Tempo de execucao do scalar_matrix_mult: %f ms\n",
+                 timedifference_msec(op_start, op_stop));
+        printf("%s", tempo1);
+
+        if (save_matrix(&A, file_out1)) {
             printf("Resultado 1 salvo em %s\n", file_out1);
+        } else {
+            fprintf(stderr, "Falha ao salvar %s\n", file_out1);
         }
     }
 
     // ---- matrix_matrix_mult ----
     printf("\nExecutando matrix_matrix_mult...\n");
-    // Zera C no host antes de produzir o resultado
     memset(C.h_rows, 0, bytesC);
-    gettimeofday(&t0, NULL);
+
+    gettimeofday(&op_start, NULL);
     int ok2 = matrix_matrix_mult(&A, &B, &C);
-    gettimeofday(&t1, NULL);
+    gettimeofday(&op_stop, NULL);
+
     if (!ok2) {
-        fprintf(stderr, "Erro em matrix_matrix_mult.\n");
+        fprintf(stderr, "Erro na execucao de matrix_matrix_mult.\n");
     } else {
-        print_first256(&C, "Matriz C (resultado final)");
-        printf("Tempo matrix_matrix_mult: %f ms\n", timedifference_msec(t0, t1));
-        if (!save_matrix(&C, file_out2)) {
-            fprintf(stderr, "Falha ao salvar %s\n", file_out2);
-        } else {
+        print_first256(&C, "Matriz C (Resultado Final)");
+
+        char tempo2[128];
+        snprintf(tempo2, sizeof(tempo2),
+                 "Tempo de execucao do matrix_matrix_mult: %f ms\n",
+                 timedifference_msec(op_start, op_stop));
+        printf("%s", tempo2);
+
+        if (save_matrix(&C, file_out2)) {
             printf("Resultado 2 salvo em %s\n", file_out2);
+        } else {
+            fprintf(stderr, "Falha ao salvar %s\n", file_out2);
         }
     }
 
@@ -195,9 +243,16 @@ int main(int argc, char **argv) {
     if (B.d_rows) cudaFree(B.d_rows);
     if (C.d_rows) cudaFree(C.d_rows);
 
-    free(A.h_rows); free(B.h_rows); free(C.h_rows);
+    free(A.h_rows);
+    free(B.h_rows);
+    free(C.h_rows);
 
-    gettimeofday(&overall_t1, NULL);
-    printf("\nTempo total (overall): %f ms\n", timedifference_msec(overall_t0, overall_t1));
+    gettimeofday(&overall_t2, NULL);
+    char tempo3[128];
+    snprintf(tempo3, sizeof(tempo3),
+             "\nTempo de execucao total: %f ms\n",
+             timedifference_msec(overall_t1, overall_t2));
+    printf("%s", tempo3);
+
     return 0;
 }
