@@ -7,7 +7,7 @@
 #include "timer.h"
 
 //Compilar: nvcc -o matrix_lib_test matrix_lib_test.cu matrix_lib.cu timer.c
-//Rodar: ./matrix_lib_test 5 2048 2048 2048 2048 256 4096 1024 matA.dat matB.dat res1.dat res2.dat
+//Rodar: ./matrix_lib_test 5 2048 2048 2048 2048 256 4096 1024 matA.dat matB.dat res1.dat res2.dat
 
 static void print_first256(const Matrix *m, const char *title)
 {
@@ -88,7 +88,7 @@ int main(int argc, char **argv)
     printf("\nDados do CPU:\n\n");
     system("lscpu");
 
-    /* Uso conforme trabalho 4:
+    /* Uso conforme trabalho:
        Valor HMat1 WMat1 HMat2 WMat2 ThreadsPorBloco MaxBlocosPorGrid
        MaxMemMiB ArqMat1 ArqMat2 ArqRes1 ArqRes2
     */
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    /* Leitura dos argumentos */
+    /* Leitura dos argumentos e execução */
     {
         float         scalar_value;
         unsigned long Ah, Aw, Bh, Bw;
@@ -120,19 +120,19 @@ int main(int argc, char **argv)
         int    ok_grid;
         int    strategy; /* 0 = FULL, 1 = parcial A/C */
 
-        scalar_value       = (float)atof(argv[1]);
-        Ah                 = strtoul(argv[2],  NULL, 10);
-        Aw                 = strtoul(argv[3],  NULL, 10);
-        Bh                 = strtoul(argv[4],  NULL, 10);
-        Bw                 = strtoul(argv[5],  NULL, 10);
-        threads_per_block  = atoi(argv[6]);
-        max_blocks_per_grid= atoi(argv[7]);
-        max_mem_bytes      = (size_t)strtoull(argv[8], NULL, 10)
-                             * 1024ULL * 1024ULL;
-        fileA              = argv[9];
-        fileB              = argv[10];
-        file_out1          = argv[11];
-        file_out2          = argv[12];
+        scalar_value        = (float)atof(argv[1]);
+        Ah                  = strtoul(argv[2],  NULL, 10);
+        Aw                  = strtoul(argv[3],  NULL, 10);
+        Bh                  = strtoul(argv[4],  NULL, 10);
+        Bw                  = strtoul(argv[5],  NULL, 10);
+        threads_per_block   = atoi(argv[6]);
+        max_blocks_per_grid = atoi(argv[7]);
+        max_mem_bytes       = (size_t)strtoull(argv[8], NULL, 10)
+                              * 1024ULL * 1024ULL;
+        fileA               = argv[9];
+        fileB               = argv[10];
+        file_out1           = argv[11];
+        file_out2           = argv[12];
 
         if (Aw != Bh) {
             fprintf(stderr,
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        /* Configuração de grid (pode cair nos defaults) */
+        /* Configuração de grid (usada em scalar + modo parcial + FULL) */
         ok_grid = set_grid_size(threads_per_block, max_blocks_per_grid);
         if (!ok_grid) {
             fprintf(stderr,
@@ -149,24 +149,24 @@ int main(int argc, char **argv)
                 "usando defaults (256 threads/block, 4096 blocks/grid)\n");
         }
 
-        /* Inicializa structs Matrix em estilo C */
-        A.height    = Ah;
-        A.width     = Aw;
-        A.h_rows    = NULL;
-        A.d_rows    = NULL;
-        A.alloc_mode= FULL_ALLOC;
+        /* Inicializa structs Matrix em C */
+        A.height     = Ah;
+        A.width      = Aw;
+        A.h_rows     = NULL;
+        A.d_rows     = NULL;
+        A.alloc_mode = FULL_ALLOC;
 
-        B.height    = Bh;
-        B.width     = Bw;
-        B.h_rows    = NULL;
-        B.d_rows    = NULL;
-        B.alloc_mode= FULL_ALLOC;
+        B.height     = Bh;
+        B.width      = Bw;
+        B.h_rows     = NULL;
+        B.d_rows     = NULL;
+        B.alloc_mode = FULL_ALLOC;
 
-        C.height    = Ah;
-        C.width     = Bw;
-        C.h_rows    = NULL;
-        C.d_rows    = NULL;
-        C.alloc_mode= FULL_ALLOC;
+        C.height     = Ah;
+        C.width      = Bw;
+        C.h_rows     = NULL;
+        C.d_rows     = NULL;
+        C.alloc_mode = FULL_ALLOC;
 
         bytesA = (size_t)Ah * (size_t)Aw * sizeof(float);
         bytesB = (size_t)Bh * (size_t)Bw * sizeof(float);
@@ -252,9 +252,7 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        /* --------- Medição de tempos --------- */
-
-        /* Janela do tempo total: engloba as duas operações */
+        /* --------- Medição do tempo total (duas operações) --------- */
         gettimeofday(&overall_t1, NULL);
 
         /* ---- scalar_matrix_mult ---- */

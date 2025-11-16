@@ -4,7 +4,9 @@
 #include <cuda_runtime.h>
 #include "matrix_lib.h"
 
-/* -------------------- Error handling -------------------- */
+/* ============================================================
+ * Macros de erro CUDA
+ * ============================================================ */
 #ifndef CUDA_CHECK
 #define CUDA_CHECK(expr)                                                  \
     do {                                                                  \
@@ -18,7 +20,9 @@
     } while (0)
 #endif
 
-/* -------------------- Global launch configuration -------------------- */
+/* ============================================================
+ * Configuração global de grid (usada pela biblioteca)
+ * ============================================================ */
 static int g_threads_per_block   = 256;
 static int g_max_blocks_per_grid = 4096;
 
@@ -56,6 +60,7 @@ int set_grid_size(int threads_per_block, int max_blocks_per_grid)
     return 1;
 }
 
+/* Helper 1D para scalar / matmul FULL / modo parcial */
 static void compute_launch_config(size_t total_elems,
                                   dim3 *grid, dim3 *block)
 {
@@ -75,9 +80,11 @@ static void compute_launch_config(size_t total_elems,
     grid->z = 1U;
 }
 
-/* -------------------- Kernels -------------------- */
+/* ============================================================
+ * Kernels
+ * ============================================================ */
 
-/* y = alpha * y  (in-place) */
+/* y = alpha * y (in-place), 1D grid-stride */
 __global__ void k_scalar_mult(float *y, float alpha, size_t n)
 {
     size_t idx    = blockIdx.x * blockDim.x + threadIdx.x;
@@ -89,33 +96,41 @@ __global__ void k_scalar_mult(float *y, float alpha, size_t n)
     }
 }
 
-/* C[MxN] = A[MxK] * B[KxN]  (A,B,C completos na GPU) */
-__global__ void k_matmul_full(const float *A, const float *B, float *C,
+/* Matmul FULL:
+ * C[MxN] = A[MxK] * B[KxN]
+ * 1D grid-stride sobre C, cada thread calcula 1+ elementos
+ */
+__global__ void k_matmul_full(const float *A,
+                              const float *B,
+                              float *C,
                               unsigned long M,
                               unsigned long N,
                               unsigned long K)
 {
-    size_t idx   = blockIdx.x * blockDim.x + threadIdx.x;
     size_t total = (size_t)M * (size_t)N;
+    size_t idx   = blockIdx.x * blockDim.x + threadIdx.x;
+    size_t stride= (size_t)blockDim.x * (size_t)gridDim.x;
 
-    if (idx >= total) return;
+    while (idx < total) {
+        unsigned long i = (unsigned long)(idx / (size_t)N);
+        unsigned long j = (unsigned long)(idx % (size_t)N);
 
-    /* recupera (i,j) a partir do índice linear */
-    unsigned long i = (unsigned long)(idx / (size_t)N);
-    unsigned long j = (unsigned long)(idx % (size_t)N);
+        float acc = 0.0f;
+        unsigned long k;
+        const float *Arow = A + i * K;
 
-    float acc = 0.0f;
-    const float *Arow = A + i * K;
-    unsigned long k;
+        for (k = 0; k < K; ++k) {
+            acc += Arow[k] * B[k * N + j];
+        }
 
-    for (k = 0; k < K; ++k) {
-        acc += Arow[k] * B[k * N + j];
+        C[i * N + j] = acc;
+        idx += stride;
     }
-
-    C[i * N + j] = acc;
 }
 
-/* Calcula uma linha de C: Crow = Arow[K] * B[KxN] */
+/* Calcula uma linha de C (modo parcial):
+ * Crow = Arow[K] * B[KxN]
+ */
 __global__ void k_matmul_row(const float *Arow,
                              const float *B,
                              float *Crow,
@@ -139,7 +154,9 @@ __global__ void k_matmul_row(const float *Arow,
     }
 }
 
-/* -------------------- Funções da biblioteca -------------------- */
+/* ============================================================
+ * Implementação das funções da biblioteca
+ * ============================================================ */
 
 int scalar_matrix_mult(float scalar_value, Matrix *matrix)
 {
@@ -269,6 +286,7 @@ int matrix_matrix_mult(Matrix *matrixA,
                               elemsB * sizeof(float),
                               cudaMemcpyHostToDevice));
 
+        /* grid e block definidos por set_grid_size */
         compute_launch_config(elemsC, &grid, &block);
 
         k_matmul_full<<<grid, block>>>(matrixA->d_rows,
@@ -302,6 +320,7 @@ int matrix_matrix_mult(Matrix *matrixA,
                               elemsB2 * sizeof(float),
                               cudaMemcpyHostToDevice));
 
+        /* grid e block definidos por set_grid_size */
         compute_launch_config((size_t)N, &grid, &block);
 
         for (i = 0; i < M; ++i) {
