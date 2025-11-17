@@ -7,7 +7,7 @@
 #include "timer.h"
 
 //Compilar: nvcc -o matrix_lib_test matrix_lib_test.cu matrix_lib.cu timer.c
-//Rodar: ./matrix_lib_test 5 2048 2048 2048 2048 256 4096 1024 matA.dat matB.dat res1.dat res2.dat
+//Rodar: ./matrix_lib_test 5 1024 1024 1024 1024 256 4096 1024 matA.dat matB.dat res1.dat res2.dat
 
 static void print_first256(const Matrix *m, const char *title)
 {
