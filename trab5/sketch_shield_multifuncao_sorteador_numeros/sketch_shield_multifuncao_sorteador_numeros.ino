@@ -155,8 +155,8 @@ void executeMaxNum() {
 
     case BUTTON_2_PRESSED:
     case BUTTON_2_LONG_PRESSED:
-      // Incrementar de 100, sem ultrapassar limites nem ficar abaixo de MIN_NUM
-      if (MAX_NUM + 100 <= RANGE_MAX_NUMBER && MAX_NUM + 100 >= MIN_NUM) {
+      // Incrementar de 100, sem ultrapassar o limite máximo
+      if (MAX_NUM + 100 <= RANGE_MAX_NUMBER) {
         MAX_NUM += 100;
         MFS.write(MAX_NUM);
       }
@@ -164,8 +164,8 @@ void executeMaxNum() {
 
     case BUTTON_3_PRESSED:
     case BUTTON_3_LONG_PRESSED:
-      // Decrementar de 100, sem ficar abaixo do mínimo permitido nem menor que MIN_NUM
-      if (MAX_NUM - 100 >= RANGE_MIN_NUMBER && MAX_NUM - 100 >= MIN_NUM) {
+      // Decrementar de 100, garantindo que MAX >= MIN
+      if (MAX_NUM - 100 >= MIN_NUM) {
         MAX_NUM -= 100;
         MFS.write(MAX_NUM);
       }
@@ -198,7 +198,7 @@ void executeMinNum() {
     case BUTTON_2_PRESSED:
     case BUTTON_2_LONG_PRESSED:
       // Incrementar de 100, sem ultrapassar MAX_NUM
-      if (MIN_NUM + 100 <= MAX_NUM && MIN_NUM + 100 <= RANGE_MAX_NUMBER) {
+      if (MIN_NUM + 100 <= MAX_NUM) {
         MIN_NUM += 100;
         MFS.write(MIN_NUM);
       }
