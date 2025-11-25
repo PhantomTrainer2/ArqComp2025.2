@@ -251,20 +251,10 @@ void executeStarted() {
   MFS.write(randomNumber);
 
   
+  MFS.blinkDisplay(DIGIT_ALL, ON);
   MFS.beep(50, 50, 3);
-
-  MFS.blinkDisplay(DIGIT_ALL, ON);
-  delay(500);
+  delay(1500);
   MFS.blinkDisplay(DIGIT_ALL, OFF);
-  delay(500);
-  MFS.blinkDisplay(DIGIT_ALL, ON);
-  delay(500);
-  MFS.blinkDisplay(DIGIT_ALL, OFF);
-  delay(500);
-  MFS.blinkDisplay(DIGIT_ALL, ON);
-  delay(500);
-  MFS.blinkDisplay(DIGIT_ALL, OFF);
-  delay(500);
 
   setLed(LED_ALL_OFF);
 
