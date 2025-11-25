@@ -65,6 +65,7 @@ void handleInterruptAnimation() {
   MFS.writeLeds(LED_ALL, OFF);
 
   MFS.beep(5, 5, 3);
+  delay(300);
 
   MIN_SET = RANGE_NOT_SET;
   MAX_SET = RANGE_NOT_SET;
@@ -251,10 +252,12 @@ void executeStarted() {
   MFS.write(randomNumber);
 
   
-  MFS.blinkDisplay(DIGIT_ALL, ON);
   MFS.beep(50, 50, 3);
-  delay(1500);
+  MFS.blinkDisplay(DIGIT_ALL, ON);
+  delay(1500); 
   MFS.blinkDisplay(DIGIT_ALL, OFF);
+  
+  
 
   setLed(LED_ALL_OFF);
 
