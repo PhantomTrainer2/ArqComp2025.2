@@ -34,8 +34,6 @@ enum AnimationModeValues {
   ANIMATION_INTERRUPTED
 };
 
-TimerOne Timer1;
-
 // Estado geral do sorteador
 GeneratorModeValues currentState;
 int MIN_NUM, MAX_NUM;
