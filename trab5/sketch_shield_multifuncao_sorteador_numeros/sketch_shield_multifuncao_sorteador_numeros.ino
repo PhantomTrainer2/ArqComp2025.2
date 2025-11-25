@@ -254,7 +254,7 @@ void executeStarted() {
   
   MFS.beep(50, 50, 3);
   MFS.blinkDisplay(DIGIT_ALL, ON);
-  delay(1500); 
+  delay(3000); 
   MFS.blinkDisplay(DIGIT_ALL, OFF);
   
   
